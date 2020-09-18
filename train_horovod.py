@@ -42,6 +42,7 @@ parser.add_argument('--batches-per-allreduce', type=int, default=1,
                     help='number of batches processed locally before '
                          'executing allreduce across workers; it multiplies '
                          'total batch size.')
+parser.add_argument("--wokers", default=1, type=int)
 parser.add_argument('--gradient-predivide-factor', type=float, default=1.0,
                     help='apply gradient predivide factor in optimizer (default: 1.0)')
 # ssd
@@ -235,8 +236,8 @@ if __name__ == '__main__':
               disable=not verbose) as t:
 
             batch_iterator = iter(train_loader)
-            for iteration in range(len(train_loader)):
-                iter_sum += 1
+            for _ in range(len(train_loader)):
+                iter_sum += args.workers
                 if iter_sum in cfg['lr_steps']:
                     step_index += 1
                     adjust_learning_rate(optimizer, args.gamma, step_index)
@@ -265,6 +266,6 @@ if __name__ == '__main__':
                 for param_group in optimizer.param_groups:
                     lr = param_group["lr"]
                     break
-                t.set_postfix({'loss': train_loss.avg.item(), 'lr': lr})
+                t.set_postfix({'loss': train_loss.avg.item(), 'lr': lr, 'iter': iter_sum})
                 t.update(1)
 
