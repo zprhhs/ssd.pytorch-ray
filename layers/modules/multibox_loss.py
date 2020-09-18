@@ -45,7 +45,7 @@ class MultiBoxLoss(nn.Module):
         self.neg_overlap = neg_overlap
         self.variance = cfg['variance']
 
-    def forward(self, predictions, targets, device):
+    def forward(self, predictions, targets, device=None):
         """Multibox Loss
         Args:
             predictions (tuple): A tuple containing loc preds, conf preds,
@@ -58,9 +58,7 @@ class MultiBoxLoss(nn.Module):
                 shape: [batch_size,num_objs,5] (last idx is the label).
         """
         loc_data, conf_data, priors = predictions
-        # print("loc_data  in {}".format(loc_data.device))
-        # print("conf_data in {}".format(conf_data.device))
-        # print("priors    in {}".format(priors.device))
+
         num = loc_data.size(0)
         priors = priors[:loc_data.size(1), :]
         num_priors = (priors.size(0))
@@ -72,10 +70,19 @@ class MultiBoxLoss(nn.Module):
             truths = targets[idx][:, :-1].data
             labels = targets[idx][:, -1].data
             defaults = priors.data
+            if device:
+                defaults = defaults.cuda(device)
+            else:
+                defaults = defaults.cuda()
             match(self.threshold, truths, defaults, self.variance, labels,
                   loc_t, conf_t, idx)
-        loc_t = loc_t.cuda(device)
-        conf_t = conf_t.cuda(device)
+        if device:
+            loc_t = loc_t.cuda(device)
+            conf_t = conf_t.cuda(device)
+        else: 
+            loc_t = loc_t.cuda()
+            conf_t = conf_t.cuda()
+
         # wrap targets
         loc_t = Variable(loc_t, requires_grad=False)
         conf_t = Variable(conf_t, requires_grad=False)
