@@ -228,6 +228,7 @@ if __name__ == '__main__':
     hvd.broadcast_optimizer_state(optimizer, root_rank=0)
 
     iter_sum = 0
+    step_index = 0
     for epoch in range(resume_from_epoch, args.epochs):
         model.train()
         train_sampler.set_epoch(epoch)
@@ -238,7 +239,7 @@ if __name__ == '__main__':
             batch_iterator = iter(train_loader)
             for _ in range(len(train_loader)):
                 iter_sum += args.workers
-                if iter_sum in cfg['lr_steps']:
+                if iter_sum >= cfg['lr_steps'][step_index]:
                     step_index += 1
                     adjust_learning_rate(optimizer, args.gamma, step_index)
     
