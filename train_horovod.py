@@ -42,7 +42,7 @@ parser.add_argument('--batches-per-allreduce', type=int, default=1,
                     help='number of batches processed locally before '
                          'executing allreduce across workers; it multiplies '
                          'total batch size.')
-parser.add_argument("--wokers", default=1, type=int)
+parser.add_argument("--workers", default=1, type=int)
 parser.add_argument('--gradient-predivide-factor', type=float, default=1.0,
                     help='apply gradient predivide factor in optimizer (default: 1.0)')
 # ssd
